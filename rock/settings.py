@@ -13,3 +13,4 @@ SPIDER_MODULES = ['rock.spiders']
 NEWSPIDER_MODULE = 'rock.spiders'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
 
+DATAFILE = '/Users/larry/myworkspace/rocky/conf/rruff.csv'
