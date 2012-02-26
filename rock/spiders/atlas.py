@@ -12,7 +12,7 @@ class AtlasSpider(CrawlSpider):
     allowed_domains = ['http://www.mineralienatlas.de/']
 
     rules = (
-        Rule(SgmlLinkExtractor(allow=r'Items/'), callback='parse_item', follow=false),
+        Rule(SgmlLinkExtractor(allow=r'Items/'), callback='parse_item', follow=False),
     )
 
     def start_requests(self):
