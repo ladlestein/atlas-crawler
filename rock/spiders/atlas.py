@@ -12,7 +12,7 @@ class AtlasSpider(CrawlSpider):
     allowed_domains = ['http://www.mineralienatlas.de/']
 
     rules = (
-        Rule(SgmlLinkExtractor(allow=r'Items/'), callback='parse_item', follow=False),
+        Rule(SgmlLinkExtractor(allow=r'.*MineralData\?mineral=.*'), callback='parse_item', follow=False),
     )
 
     def start_requests(self):
@@ -20,23 +20,25 @@ class AtlasSpider(CrawlSpider):
         print "filename = ", filename
         print settings
         input = csv.reader(open(filename, 'rb'))
-        return map(make_url, [input.next(), input.next(), input.next()])
+        for line in input:
+            yield self.make_request(line)
 
-    def parse_item(self, response):
+    def parse(self, response):
         hxs = HtmlXPathSelector(response)
         i = MineralItem()
         element = hxs.select("//td[p[contains(text(), 'Space Group number')]]/following-sibling::td[1]/p/text()")
-        text = element.extract()[0]
-        i.name = ""
-        i.space_group_number = text
-        #i['domain_id'] = hxs.select('//input[@id="sid"]/@value').extract()
-        #i['name'] = hxs.select('//div[@id="name"]').extract()
-        #i['description'] = hxs.select('//div[@id="description"]').extract()
+        space_group_text = element.extract()[0]
+        name = response.meta['name']
+        i['name'] = name
+        i['spaceGroupNumber'] = space_group_text
+        print "mineral %s has space group %s" % (name, space_group_text)
         return i
 
-url_pattern = 'http://www.mineralienatlas.de/lexikon/index.php/MineralData?mineral=%s&language=english&lang=en'
+    url_pattern = 'http://www.mineralienatlas.de/lexikon/index.php/MineralData?mineral=%s&language=english&lang=en'
 
-def make_url(row):
-    mineral_name = row[0]
-    return Request(url_pattern % mineral_name)
+    def make_request(self, row):
+        mineral_name = row[0]
+        request = Request(self.url_pattern % mineral_name)
+        request.meta['name'] = mineral_name
+        return request
 
